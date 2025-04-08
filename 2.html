@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Auction</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            position: relative;
+        }
+        #timer-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: red;
+        }
+        .auction-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .current-bid {
+            margin-bottom: 5px;
+        }
+        .bid-button {
+            padding: 8px 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .bid-button:hover {
+            background-color: #0056b3;
+        }
+        .highest-bidder {
+            font-style: italic;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Auction</h1>
+
+    <div id="timer-display">Time Remaining: 60</div>
+    <div id="auction-items">
+        </div>
+
+    <script>
+        const timerDisplay = document.getElementById('timer-display');
+        const auctionItemsDiv = document.getElementById('auction-items');
+        const materials = {
+            "Farming": "100 Wheat",
+            "Mining": "100 Copper",
+            "Wild Game": "100 Beef",
+            "Livestock": "100 Wool",
+            "Oil & Gas": "100 Barrels of Oil"
+        };
+        const industries = Object.keys(materials);
+        const numItems = 8;
+        const players = ["Clint", "Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace"];
+        let timeLeft = 60;
+        let timerInterval;
+        const items = [];
+
+        function getRandomMaterial() {
+            const randomIndex = Math.floor(Math.random() * industries.length);
+            return materials[industries[randomIndex]];
+        }
+
+        function createAuctionItem(itemName, index) {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('auction-item');
+            itemDiv.dataset.itemId = index;
+            itemDiv.dataset.currentBid = 0;
+            itemDiv.dataset.highestBidder = "";
+
+            const itemNameElem = document.createElement('div');
+            itemNameElem.classList.add('item-name');
+            itemNameElem.textContent = `Item ${index + 1}: ${itemName}`;
+
+            const currentBidElem = document.createElement('div');
+            currentBidElem.classList.add('current-bid');
+            currentBidElem.textContent = `Current Bid: $0`;
+
+            const highestBidderElem = document.createElement('div');
+            highestBidderElem.classList.add('highest-bidder');
+            highestBidderElem.textContent = `Highest Bidder: None`;
+
+            const bidButton = document.createElement('button');
+            bidButton.classList.add('bid-button');
+            bidButton.textContent = "Bid +$1";
+            bidButton.addEventListener('click', () => {
+                bid(index, "Clint");
+            });
+
+            itemDiv.appendChild(itemNameElem);
+            itemDiv.appendChild(currentBidElem);
+            itemDiv.appendChild(highestBidderElem);
+            itemDiv.appendChild(bidButton);
+
+            auctionItemsDiv.appendChild(itemDiv);
+            items.push({ element: itemDiv, name: itemName, currentBid: 0, highestBidder: "" });
+        }
+
+        function initializeAuction() {
+            for (let i = 0; i < numItems; i++) {
+                createAuctionItem(getRandomMaterial(), i);
+            }
+        }
+
+        function updateItemDisplay(itemId) {
+            const item = items[itemId];
+            const itemDiv = item.element;
+            itemDiv.dataset.currentBid = item.currentBid;
+            itemDiv.dataset.highestBidder = item.highestBidder;
+            itemDiv.querySelector('.current-bid').textContent = `Current Bid: $${item.currentBid}`;
+            itemDiv.querySelector('.highest-bidder').textContent = `Highest Bidder: ${item.highestBidder || 'None'}`;
+        }
+
+        function bid(itemId, bidder) {
+            if (timeLeft > 0) {
+                items[itemId].currentBid++;
+                items[itemId].highestBidder = bidder;
+                updateItemDisplay(itemId);
+            }
+        }
+
+        function opponentBid() {
+            if (timeLeft > 0) {
+                const randomItemIndex = Math.floor(Math.random() * numItems);
+                const randomOpponentIndex = Math.floor(Math.random() * (players.length - 1)) + 1; // Exclude Clint
+                const opponentName = players[randomOpponentIndex];
+                const randomDelay = Math.floor(Math.random() * 10) + 1;
+
+                setTimeout(() => {
+                    bid(randomItemIndex, opponentName);
+                    if (timeLeft > 0) {
+                        opponentBid(); // Continue bidding
+                    }
+                }, randomDelay * 1000);
+            }
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            timerDisplay.textContent = `Time Remaining: ${timeLeft}`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timerDisplay.textContent = 'Auction Ended!';
+                // Optionally disable all bid buttons
+                const bidButtons = document.querySelectorAll('.bid-button');
+                bidButtons.forEach(button => button.disabled = true);
+            }
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        initializeAuction();
+        startTimer();
+        opponentBid(); // Start opponent bidding
+    </script>
+</body>
+</html>
