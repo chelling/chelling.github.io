@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bid on Industries - Prioritize Bids</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            position: relative;
+        }
+        #budget-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        #timer-display {
+            position: absolute;
+            top: 30px;
+            right: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: red;
+        }
+        #player-info {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        #your-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        #opponent-bids {
+            margin-top: 10px;
+        }
+        #opponent-bids h2 {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        #opponent-list {
+            list-style-type: none;
+            padding: 0;
+            font-size: 0.9em;
+            color: #777;
+        }
+        #opponent-list li {
+            margin-bottom: 3px;
+        }
+        #bid-inputs-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .bid-entry {
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 3px;
+            background-color: #f9f9f9;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+        }
+        .bid-entry.dragging {
+            opacity: 0.5;
+        }
+        .bid-entry label {
+            display: block;
+            margin-right: 10px;
+            font-weight: bold;
+            flex-grow: 1;
+        }
+        .bid-entry .bid-input-group {
+            display: flex;
+            align-items: center;
+        }
+        .bid-entry .bid-input-group label {
+            margin-right: 5px;
+            font-weight: normal;
+        }
+        .bid-entry input[type="number"] {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        #bid-results {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        #bid-results h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        #bid-results ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #bid-results li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bid on Industries - Drag to Prioritize</h1>
+
+    <div id="budget-display">Total Budget: $200</div>
+    <div id="timer-display">Time Remaining: 30</div>
+
+    <div id="player-info">
+        <div id="your-name">Your Name: Clint</div>
+        <div id="opponent-bids">
+            <h2>Opponents</h2>
+            <ul id="opponent-list">
+            </ul>
+        </div>
+    </div>
+
+    <div id="bid-inputs-container">
+        </div>
+
+    <div id="bid-results" style="display: none;">
+        <h2>Auction Results</h2>
+        <ul id="auction-winners">
+        </ul>
+    </div>
+
+    <script>
+        const bidInputsContainer = document.getElementById('bid-inputs-container');
+        const opponentList = document.getElementById('opponent-list');
+        const possibleIndustries = ["Farming", "Mining", "Livestock", "Wild Game", "Oil & Gas"];
+        let draggableItem = null;
+        const totalBudget = 200;
+        const budgetDisplay = document.getElementById('budget-display');
+        const timerDisplay = document.getElementById('timer-display');
+        let timeLeft = 30;
+        let timerInterval;
+        const opponentNames = ["Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace"];
+        const numPlayers = 8;
+        const industriesToBid = 8;
+        const auctionResultsDiv = document.getElementById('bid-results');
+        const auctionWinnersList = document.getElementById('auction-winners');
+        let playerBids = {};
+        let currentIndustries = [];
+
+        function getRandomIndustries(arr, count) {
+            const result = [];
+            for (let i = 0; i < count; i++) {
+                const randomIndex = Math.floor(Math.random() * arr.length);
+                result.push(arr[randomIndex]);
+            }
+            return result;
+        }
+
+        function createBidEntry(industryName) {
+            const bidEntry = document.createElement('div');
+            bidEntry.classList.add('bid-entry');
+            bidEntry.draggable = true;
+
+            const industryLabel = document.createElement('label');
+            industryLabel.textContent = `${industryName}:`;
+
+            const bidInputGroup = document.createElement('div');
+            bidInputGroup.classList.add('bid-input-group');
+
+            const bidLabel = document.createElement('label');
+            bidLabel.textContent = `Bid ($):`;
+            const bidInput = document.createElement('input');
+            bidInput.type = 'number';
+            bidInput.min = '0';
+            bidInput.max = totalBudget;
+            bidInput.dataset.industry = industryName;
+
+            bidInput.addEventListener('change', function() {
+                if (parseInt(this.value) > totalBudget) {
+                    this.value = totalBudget;
+                } else if (parseInt(this.value) < 0) {
+                    this.value = 0;
+                }
+                getPlayerBids();
+            });
+
+            bidInputGroup.appendChild(bidLabel);
+            bidInputGroup.appendChild(bidInput);
+
+            bidEntry.appendChild(industryLabel);
+            bidEntry.appendChild(bidInputGroup);
+
+            bidInputsContainer.appendChild(bidEntry);
+        }
+
+        function loadIndustryBids() {
+            bidInputsContainer.innerHTML = '';
+            const randomIndustries = getRandomIndustries(possibleIndustries, industriesToBid);
+            currentIndustries = [];
+            const industryCounts = {};
+            randomIndustries.forEach(industry => {
+                industryCounts[industry] = (industryCounts[industry] || 0) + 1;
+                currentIndustries.push(`${industry} - ${industryCounts[industry]}`);
+            });
+            currentIndustries.forEach(industryName => {
+                createBidEntry(industryName);
+            });
+
+            addDragAndDropListeners();
+            displayOpponentNames();
+            getPlayerBids();
+        }
+
+        function displayOpponentNames() {
+            opponentList.innerHTML = '';
+            opponentNames.forEach(name => {
+                const listItem = document.createElement('li');
+                listItem.textContent = name;
+                opponentList.appendChild(listItem);
+            });
+        }
+
+        function addDragAndDropListeners() {
+            const bidEntries = bidInputsContainer.querySelectorAll('.bid-entry');
+
+            bidEntries.forEach(item => {
+                item.addEventListener('dragstart', dragStart);
+                item.addEventListener('dragover', dragOver);
+                item.addEventListener('drop', drop);
+            });
+        }
+
+        function dragStart(e) {
+            draggableItem = e.target;
+            draggableItem.classList.add('dragging');
+            e.dataTransfer.setData('text/html', draggableItem.innerHTML);
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function drop(e) {
+            if (e.target !== draggableItem && e.target.classList.contains('bid-entry')) {
+                const children = Array.from(bidInputsContainer.children);
+                const draggableIndex = children.indexOf(draggableItem);
+                const dropIndex = children.indexOf(e.target);
+
+                if (draggableIndex < dropIndex) {
+                    bidInputsContainer.insertBefore(draggableItem, e.target.nextElementSibling);
+                } else {
+                    bidInputsContainer.insertBefore(draggableItem, e.target);
+                }
+            }
+            draggableItem.classList.remove('dragging');
+            draggableItem = null;
+        }
+
+        function getPlayerBids() {
+            playerBids = {};
+            const bidEntries = bidInputsContainer.querySelectorAll('.bid-entry');
+            bidEntries.forEach(entry => {
+                const industryLabelElement = entry.querySelector('label');
+                const bidInput = entry.querySelector('input[type="number"]');
+                if (industryLabelElement && bidInput) {
+                    const industry = industryLabelElement.textContent.slice(0, -1);
+                    const bidAmount = parseInt(bidInput.value);
+                    playerBids[industry] = isNaN(bidAmount) ? 0 : bidAmount;
+                }
+            });
+        }
+
+        function generateOpponentBids() {
+            const opponentBids = {};
+            opponentNames.forEach(opponent => {
+                opponentBids[opponent] = {};
+                currentIndustries.forEach(industry => {
+                    opponentBids[opponent][industry] = Math.floor(Math.random() * 201);
+                });
+            });
+            return opponentBids;
+        }
+
+        function determineWinners() {
+            const allBids = {};
+            currentIndustries.forEach(industry => {
+                allBids[industry] = { Clint: playerBids[industry] };
+                const opponentBids = generateOpponentBids();
+                for (const opponent in opponentBids) {
+                    allBids[industry][opponent] = opponentBids[opponent][industry];
+                }
+            });
+
+            const winners = {};
+            const winningBids = {};
+            const claimedBy = {};
+
+            for (const industry of currentIndustries) {
+                let bestBid = -1;
+                let winningPlayer = null;
+
+                for (const player in allBids[industry]) {
+                    if (!claimedBy[player] || claimedBy[player] < 1) { // Allow multiple wins now
+                        if (allBids[industry][player] > bestBid) {
+                            bestBid = allBids[industry][player];
+                            winningPlayer = player;
+                        }
+                    }
+                }
+
+                if (winningPlayer) {
+                    winners[industry] = winningPlayer;
+                    winningBids[industry] = bestBid;
+                    claimedBy[winningPlayer] = (claimedBy[winningPlayer] || 0) + 1;
+                }
+            }
+
+            return { winners, winningBids };
+        }
+
+        function displayAuctionResults() {
+            auctionWinnersList.innerHTML = '';
+            const results = determineWinners();
+            const winners = results.winners;
+            const winningBids = results.winningBids;
+            for (const industry in winners) {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${winners[industry]} won ${industry} with a bid of $${winningBids[industry]}`;
+                auctionWinnersList.appendChild(listItem);
+            }
+            auctionResultsDiv.style.display = 'block';
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            timerDisplay.textContent = `Time Remaining: ${timeLeft}`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timerDisplay.textContent = 'Time is up!';
+                getPlayerBids();
+                displayAuctionResults();
+            }
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        budgetDisplay.textContent = `Total Budget: $${totalBudget}`;
+        loadIndustryBids();
+        startTimer();
+    </script>
+</body>
+</html>
