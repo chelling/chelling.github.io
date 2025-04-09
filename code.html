@@ -4,7 +4,226 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Economic Simulation Game - Phase 2</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        #game-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        #players-section, #auction-section, #results-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-basis: 45%;
+            min-width: 300px;
+        }
+
+        #results-section {
+             flex-basis: 92%; /* Take full width when visible */
+        }
+
+
+        #players-list, #final-players-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .player-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            font-size: 0.9em;
+        }
+
+        .player-card.human {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+
+        .player-card strong {
+            color: #007bff;
+        }
+
+        #auction-timer {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #dc3545;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        #materials-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .material-item {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+
+        .material-item h4 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: #343a40;
+            text-transform: capitalize;
+        }
+        .material-item p {
+            margin: 3px 0;
+            font-size: 0.95em;
+        }
+
+        .material-item button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .material-item button:hover {
+            background-color: #218838;
+        }
+        .material-item button:disabled {
+             background-color: #6c757d;
+             cursor: not-allowed;
+        }
+
+
+        #bid-controls {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #c3e6cb;
+            background-color: #d4edda;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        #bid-controls h3 {
+             margin-top: 0;
+        }
+
+        #bid-controls input[type="number"] {
+            padding: 8px;
+            margin: 0 10px;
+            width: 80px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        #bid-controls button {
+            padding: 8px 15px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+
+        #bid-controls button:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        #auction-log {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 10px;
+            background-color: #f9f9f9;
+            font-size: 0.85em;
+        }
+        #auction-log h3 {
+            margin-top: 0;
+            font-size: 1.1em;
+            text-align: left;
+        }
+        #log-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        #log-list li {
+            margin-bottom: 5px;
+            border-bottom: 1px dotted #ddd;
+            padding-bottom: 3px;
+        }
+
+        #auction-results ul, #final-players-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #auction-results li {
+            background-color: #e2e3e5;
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+
+        .highlight {
+            animation: highlight-bid 1s ease-out;
+        }
+
+        @keyframes highlight-bid {
+            0% { background-color: #ffc107; }
+            100% { background-color: #f8f9fa; } /* End color of material-item */
+        }
+
+        .highlight-log {
+            animation: highlight-log-entry 1s ease-out;
+             background-color: #fff3cd; /* Bootstrap's warning background */
+             border-left: 3px solid #ffeeba; /* Bootstrap's warning border */
+             padding-left: 5px;
+             margin-left: -8px; /* Adjust alignment */
+        }
+
+        /* Adjust layout for smaller screens */
+        @media (max-width: 768px) {
+            #game-container {
+                flex-direction: column;
+                align-items: center;
+            }
+             #players-section, #auction-section, #results-section {
+                flex-basis: 90%;
+                width: 90%;
+            }
+        }
+    </style>
 </head>
 <body>
     <h1>Economic Simulation Game - Phase 2: Materials Auction</h1>
@@ -40,6 +259,515 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const industriesData = [
+                { Name: "Farming", Input: null, Output: "wheat", Output_quantity: 100 },
+                { Name: "Mining", Input: null, Output: "copper", Output_quantity: 50 },
+                { Name: "Livestock", Input: null, Output: "milk", Output_quantity: 100 },
+                { Name: "Hunting & Fishing", Input: null, Output: "beef", Output_quantity: 100 },
+                { Name: "Oil & gas", Input: null, Output: "crude oil", Output_quantity: 100 }
+            ];
+
+            const robotNames = ["RoboCorp", "BotWorks", "Synth Inc.", "AI Systems", "Mech Co.", "Droid Dyn.", "Circuit LLC"];
+            let players = [];
+            let materialsForAuction = [];
+            let auctionInterval;
+            let robotBidInterval;
+            let timer = 60; // Auction duration in seconds
+            let selectedMaterialIndex = -1; // Index of the material selected by the human player
+            let auctionIsOver = false;
+
+            const playersListDiv = document.getElementById('players-list');
+            const materialsListDiv = document.getElementById('materials-list');
+            const timerSpan = document.getElementById('time');
+            const bidControlsDiv = document.getElementById('bid-controls');
+            const selectedMaterialSpan = document.getElementById('selected-material-name');
+            const bidAmountInput = document.getElementById('bid-amount');
+            const placeBidButton = document.getElementById('place-bid-button');
+            const bidErrorP = document.getElementById('bid-error');
+            const resultsSectionDiv = document.getElementById('results-section');
+            const auctionResultsDiv = document.getElementById('auction-results');
+            const finalPlayersListDiv = document.getElementById('final-players-list');
+            const auctionLogList = document.getElementById('log-list');
+            const auctionTimerDiv = document.getElementById('auction-timer');
+
+
+            function getRandomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            function logAuctionEvent(message) {
+                if (!auctionLogList) return; // Guard against element not found
+                const li = document.createElement('li');
+                const timestamp = auctionIsOver ? "Final" : `${60 - Math.max(0, timer)}s`;
+                li.textContent = `[${timestamp}] ${message}`;
+                auctionLogList.prepend(li); // Add new logs to the top
+                li.classList.add('highlight-log');
+                setTimeout(() => li.classList.remove('highlight-log'), 1500); // Remove highlight after a bit
+            }
+
+
+            function initializeGame() {
+                // 1. Create Players (simulate Phase 1 outcome)
+                players = [];
+                const availableRobotNames = [...robotNames];
+                shuffleArray(availableRobotNames);
+
+                // Human Player - Start with $200 before simulated Phase 1 bidding
+                players.push({
+                    id: 0, // Assign unique ID
+                    name: "You",
+                    isHuman: true,
+                    initialMoney: 200,
+                    money: 200, // Money before phase 1 bidding
+                    industry: null, // Will be assigned below
+                    phase1Bid: 0, // Store the bid for display later if needed
+                    inventory: {}
+                });
+
+                // Robot Players - Start with $200 before simulated Phase 1 bidding
+                for (let i = 0; i < 7; i++) {
+                    players.push({
+                        id: i + 1, // Assign unique ID
+                        name: availableRobotNames[i],
+                        isHuman: false,
+                        initialMoney: 200,
+                        money: 200, // Money before phase 1 bidding
+                        industry: null,
+                        phase1Bid: 0,
+                        inventory: {}
+                    });
+                }
+
+                 // --- Simulate Phase 1 Blind Auction ---
+                 let phase1Industries = [];
+                 while (phase1Industries.length < 8) {
+                     phase1Industries.push({...industriesData[getRandomInt(0, industriesData.length - 1)], bidders: []});
+                 }
+
+                 // Robots place random bids
+                 players.forEach(player => {
+                     if (!player.isHuman) {
+                         const bid = getRandomInt(1, player.money); // Robots bid up to their max money
+                         player.phase1Bid = bid;
+                     }
+                     // For simplicity, we'll assign a random bid to the human too,
+                     // as there's no input mechanism for Phase 1 here.
+                     // A real implementation would get the human bid first.
+                     else {
+                         const bid = getRandomInt(1, player.money);
+                         player.phase1Bid = bid;
+                     }
+                 });
+
+                 // Assign industries based on highest bids for *each* tile uniquely.
+                 // This simplified logic assumes exactly one tile per player.
+                 // A more robust auction might need tie-breaking or iterative assignment.
+                 let assignedPlayers = new Set();
+                 phase1Industries.forEach(industryTile => {
+                     // Find players not yet assigned
+                    let potentialBidders = players.filter(p => !assignedPlayers.has(p.id));
+                     if (potentialBidders.length === 0) return; // Should not happen if players = industries
+
+                     // Find the highest bidder among available players for this conceptual tile slot
+                     potentialBidders.sort((a, b) => b.phase1Bid - a.phase1Bid);
+                     let winner = potentialBidders[0];
+
+                     // Assign industry and deduct bid amount
+                     winner.industry = { Name: industryTile.Name, Input: industryTile.Input, Output: industryTile.Output, Output_quantity: industryTile.Output_quantity };
+                     winner.money -= winner.phase1Bid;
+                     assignedPlayers.add(winner.id);
+                     // Log or display phase 1 results if needed
+                     // console.log(`${winner.name} won ${industryTile.Name} with a bid of $${winner.phase1Bid}`);
+                 });
+                 // Ensure everyone got an industry (in this simple model)
+                 if(assignedPlayers.size !== players.length) {
+                    console.error("Error in Phase 1 assignment simulation: Not all players received an industry.");
+                    // Handle error - maybe re-run assignment or assign randomly
+                 }
+                 // --- End Simulate Phase 1 ---
+
+
+                // 3. Prepare Materials for Auction based on Phase 1 results
+                materialsForAuction = [];
+                players.forEach(player => {
+                    if (player.industry && player.industry.Output) {
+                        materialsForAuction.push({
+                            id: `material-${materialsForAuction.length}`, // Unique ID for targeting elements
+                            material: player.industry.Output,
+                            quantity: player.industry.Output_quantity,
+                            seller: player.name, // Keep track of the original owner
+                            currentBid: 0,
+                            highestBidder: null, // Track name of highest bidder
+                            highestBidderId: null // Track ID for easier lookup
+                        });
+                    }
+                });
+
+                // 4. Initial Render
+                renderPlayers();
+                renderMaterials();
+                timerSpan.textContent = timer;
+
+                // 5. Start Auction
+                startAuctionTimer();
+                startRobotBidding();
+
+                logAuctionEvent("Phase 2: Materials Auction Started!");
+            }
+
+            function renderPlayers(final = false) {
+                const listDiv = final ? finalPlayersListDiv : playersListDiv;
+                 if (!listDiv) return; // Guard
+                listDiv.innerHTML = ''; // Clear previous list
+                players.forEach(player => {
+                    const card = document.createElement('div');
+                    card.classList.add('player-card');
+                    if (player.isHuman) {
+                        card.classList.add('human');
+                    }
+                    let inventoryString = "";
+                     if (final) {
+                         inventoryString = Object.entries(player.inventory)
+                                             .map(([mat, qty]) => `${mat}: ${qty}`)
+                                             .join(', ') || 'None';
+                         inventoryString = `<br>Inventory: ${inventoryString}`;
+                    }
+
+                    card.innerHTML = `
+                        <strong>${player.name} ${player.isHuman ? '(You)' : '(Bot)'}</strong><br>
+                        Money: $${player.money}<br>
+                        Industry: ${player.industry ? player.industry.Name : 'None'}
+                        ${player.phase1Bid > 0 ? `<br><small>(Phase 1 Bid: $${player.phase1Bid})</small>` : ''}
+                        ${inventoryString}
+                    `;
+                    listDiv.appendChild(card);
+                });
+            }
+
+             function renderMaterials() {
+                 if (!materialsListDiv) return; // Guard
+                 const previouslySelectedMaterialId = selectedMaterialIndex !== -1 ? materialsForAuction[selectedMaterialIndex].id : null;
+
+                 materialsListDiv.innerHTML = '';
+                 materialsForAuction.forEach((item, index) => {
+                     const div = document.createElement('div');
+                     div.classList.add('material-item');
+                     div.id = item.id; // Assign unique ID
+
+                      // Check if the current highest bidder is the human player
+                     const isHumanHighest = players[0].name === item.highestBidder; // Assuming player 0 is human
+
+                     div.innerHTML = `
+                         <h4>${item.material} (${item.quantity})</h4>
+                         <p>Seller: ${item.seller}</p>
+                         <p>Current Bid: $<span class="current-bid">${item.currentBid}</span></p>
+                         <p>Highest Bidder: <span class="highest-bidder ${isHumanHighest ? 'human' : ''}">${item.highestBidder || 'None'}</span></p>
+                         <button class="select-bid-button" data-index="${index}" ${auctionIsOver ? 'disabled' : ''}>${auctionIsOver ? 'Auction Over' : 'Select for Bidding'}</button>
+                     `;
+                     materialsListDiv.appendChild(div);
+
+                     // Add highlight if just updated
+                     if (item.justUpdated) {
+                         div.classList.add('highlight');
+                         // Remove highlight after animation
+                         setTimeout(() => {
+                             div.classList.remove('highlight');
+                             item.justUpdated = false; // Reset flag
+                         }, 1000);
+                     }
+                 });
+
+                 // Re-attach event listeners for the select buttons
+                 document.querySelectorAll('.select-bid-button').forEach(button => {
+                     button.addEventListener('click', handleSelectMaterial);
+                 });
+
+                 // Re-select the material if it was previously selected
+                 if (previouslySelectedMaterialId && !auctionIsOver) {
+                    const newIndex = materialsForAuction.findIndex(m => m.id === previouslySelectedMaterialId);
+                    if (newIndex !== -1) {
+                        selectedMaterialIndex = newIndex;
+                        // Update bid controls if they are visible
+                        if (bidControlsDiv.style.display === 'block') {
+                            updateBidControlsForSelection();
+                        }
+                    } else {
+                        // The material might have been removed or changed ID; deselect
+                        selectedMaterialIndex = -1;
+                        bidControlsDiv.style.display = 'none';
+                    }
+                }
+            }
+
+
+            function handleSelectMaterial(event) {
+                if (auctionIsOver) return; // Don't allow selection after auction ends
+
+                selectedMaterialIndex = parseInt(event.target.getAttribute('data-index'));
+                updateBidControlsForSelection();
+                bidControlsDiv.style.display = 'block';
+            }
+
+            function updateBidControlsForSelection() {
+                 if (selectedMaterialIndex === -1 || !materialsForAuction[selectedMaterialIndex]) {
+                    bidControlsDiv.style.display = 'none';
+                    return;
+                }
+                const selectedMaterial = materialsForAuction[selectedMaterialIndex];
+                selectedMaterialSpan.textContent = `${selectedMaterial.material} (Current Bid: $${selectedMaterial.currentBid})`;
+                const suggestedBid = selectedMaterial.currentBid + 1;
+                bidAmountInput.value = suggestedBid;
+                bidAmountInput.min = suggestedBid;
+                bidErrorP.textContent = '';
+            }
+
+            function updateMaterialDisplay(index) {
+                const item = materialsForAuction[index];
+                const itemElement = document.getElementById(item.id);
+                if (itemElement) {
+                    itemElement.querySelector('.current-bid').textContent = item.currentBid;
+                    const bidderSpan = itemElement.querySelector('.highest-bidder');
+                    bidderSpan.textContent = item.highestBidder || 'None';
+                    // Check if the human player (assumed ID 0) is the highest bidder
+                     const humanPlayer = players.find(p => p.isHuman);
+                    if (item.highestBidderId === humanPlayer?.id) {
+                         bidderSpan.classList.add('human');
+                    } else {
+                         bidderSpan.classList.remove('human');
+                    }
+
+                     item.justUpdated = true; // Flag for highlighting in the next render
+
+                    // If this is the currently selected item by human, update bid controls too
+                    if (index === selectedMaterialIndex) {
+                         updateBidControlsForSelection();
+                    }
+
+                } else {
+                    console.error("Could not find element for material ID:", item.id);
+                }
+                // Trigger a re-render to show highlights and update bidder class
+                renderMaterials();
+            }
+
+
+            function placeBid(playerIndex, materialIndex, amount) {
+                if (auctionIsOver) return false; // Don't allow bids after end
+
+                const player = players[playerIndex];
+                const material = materialsForAuction[materialIndex];
+                if (!player || !material) {
+                    console.error("Invalid player or material index in placeBid");
+                    return false;
+                }
+
+                // Basic validations
+                if (amount <= material.currentBid) {
+                     if (player.isHuman) bidErrorP.textContent = 'Your bid must be higher than the current bid.';
+                    // console.log(`${player.name} bid $${amount} too low on ${material.material} (Current: $${material.currentBid})`);
+                    return false;
+                }
+                if (amount > player.money) {
+                     if (player.isHuman) bidErrorP.textContent = 'You do not have enough money for this bid.';
+                    // console.log(`${player.name} doesn't have enough money ($${player.money}) for $${amount} bid on ${material.material}`);
+                    return false;
+                }
+                // Prevent bidding against oneself
+                if (material.highestBidderId === player.id) {
+                    // console.log(`${player.name} is already highest bidder on ${material.material}`);
+                    if (player.isHuman) bidErrorP.textContent = 'You are already the highest bidder.';
+                    return false;
+                }
+
+                // Update auction state
+                material.currentBid = amount;
+                material.highestBidder = player.name;
+                material.highestBidderId = player.id;
+
+                // Update UI
+                updateMaterialDisplay(materialIndex);
+                 if (player.isHuman) {
+                    bidErrorP.textContent = ''; // Clear error on successful bid
+                 }
+
+                logAuctionEvent(`${player.name} bid $${amount} on ${material.material}`);
+                return true;
+            }
+
+
+            function handleHumanBid() {
+                if (selectedMaterialIndex === -1 || auctionIsOver) return;
+
+                const bidAmount = parseInt(bidAmountInput.value);
+                const humanPlayerIndex = players.findIndex(p => p.isHuman);
+                if(humanPlayerIndex === -1) {
+                    console.error("Human player not found!");
+                    return;
+                }
+
+                if (isNaN(bidAmount) || bidAmount <= 0) {
+                    bidErrorP.textContent = 'Please enter a valid bid amount.';
+                    return;
+                }
+
+                placeBid(humanPlayerIndex, selectedMaterialIndex, bidAmount);
+            }
+
+
+            function simulateRobotBids() {
+                if (auctionIsOver || materialsForAuction.length === 0) return;
+
+                 players.forEach((robot, index) => {
+                    if (robot.isHuman || Math.random() > 0.15) return; // Give each robot a ~15% chance to consider bidding each cycle
+
+                    const materialIndex = getRandomInt(0, materialsForAuction.length - 1);
+                    const material = materialsForAuction[materialIndex];
+
+                    // Simple robot logic:
+                    // - Don't bid if already winning
+                    // - Consider bidding slightly higher if they can afford it
+                    // - More likely to bid higher if they "need" the material (not implemented here)
+                    // - Less likely to bid near their total money (risk aversion)
+
+                    if (robot.id !== material.highestBidderId) {
+                        const currentBid = material.currentBid;
+                        const maxAffordableBid = robot.money;
+                        const minBid = currentBid + 1;
+
+                         if (maxAffordableBid >= minBid) {
+                             // Robots bid a random amount above the current bid, but not exceeding their money
+                             // They are less likely to bid very close to their max money
+                            const bidRange = Math.min(maxAffordableBid - minBid, 20); // Bid up to $20 more, or less if money is tight
+                            const bidIncrement = getRandomInt(1, Math.max(1, bidRange)); // Ensure increment is at least 1
+                             let proposedBid = minBid + bidIncrement -1; // -1 because minBid is already +1
+
+                             // Add a slight chance of a larger bid if they have plenty of money
+                             if (robot.money > 100 && Math.random() < 0.1) {
+                                 proposedBid += getRandomInt(10, 30);
+                             }
+                             proposedBid = Math.min(proposedBid, maxAffordableBid); // Ensure they don't bid more than they have
+
+                            // Final check and place bid
+                            if (proposedBid > currentBid && proposedBid <= robot.money) {
+                                placeBid(index, materialIndex, proposedBid);
+                            }
+                         }
+                    }
+                });
+            }
+
+            function startAuctionTimer() {
+                timer = 60; // Reset timer just in case
+                auctionIsOver = false;
+                 if (!timerSpan || !auctionTimerDiv) return; // Guard
+                 auctionTimerDiv.style.backgroundColor = '#f8d7da'; // Reset to warning color
+                 auctionTimerDiv.style.color = '#dc3545';
+                 timerSpan.textContent = timer;
+
+                auctionInterval = setInterval(() => {
+                    timer--;
+                    if (timerSpan) timerSpan.textContent = Math.max(0, timer); // Ensure timer doesn't go below 0 visually
+
+                    if (timer <= 10 && timer > 0) {
+                         auctionTimerDiv.style.fontWeight = 'bold'; // Emphasize last 10 seconds
+                    }
+
+                    if (timer <= 0) {
+                        endAuction();
+                    }
+                }, 1000);
+            }
+
+             function startRobotBidding() {
+                // Robots attempt to bid at random intervals
+                 clearInterval(robotBidInterval); // Clear any existing interval
+                robotBidInterval = setInterval(simulateRobotBids, 850); // Robots think/bid slightly less frequently
+            }
+
+            function endAuction() {
+                if (auctionIsOver) return; // Prevent running multiple times
+
+                clearInterval(auctionInterval);
+                clearInterval(robotBidInterval);
+                auctionIsOver = true;
+                timer = 0;
+                if (timerSpan) timerSpan.textContent = timer;
+                if(auctionTimerDiv) {
+                    auctionTimerDiv.innerHTML = "Auction Ended!"; // Use innerHTML to replace content
+                    auctionTimerDiv.style.color = 'white';
+                    auctionTimerDiv.style.backgroundColor = '#28a745'; // Green color for ended
+                    auctionTimerDiv.style.fontWeight = 'normal';
+                }
+
+                logAuctionEvent("Auction Ended! Processing results...");
+
+
+                // Disable bidding controls
+                if(bidControlsDiv) bidControlsDiv.style.display = 'none';
+                document.querySelectorAll('.select-bid-button').forEach(button => {
+                     button.disabled = true;
+                     button.textContent = "Auction Over";
+                });
+
+
+                // Process results
+                let resultsHTML = '<ul>';
+                materialsForAuction.forEach(item => {
+                    if (item.highestBidderId !== null) {
+                        const winner = players.find(p => p.id === item.highestBidderId);
+                        if (winner) {
+                            // Deduct money - check if they still have enough (should be guaranteed by placeBid checks)
+                            if(winner.money >= item.currentBid) {
+                                winner.money -= item.currentBid;
+                                // Add to inventory
+                                if (!winner.inventory[item.material]) {
+                                    winner.inventory[item.material] = 0;
+                                }
+                                winner.inventory[item.material] += item.quantity;
+                                resultsHTML += `<li>${item.material} (${item.quantity}) sold to <strong>${winner.name}</strong> for $${item.currentBid}</li>`;
+                                logAuctionEvent(`${item.material} awarded to ${winner.name} for $${item.currentBid}.`);
+                            } else {
+                                // This case *shouldn't* happen if bid validation is correct during the auction
+                                resultsHTML += `<li>${item.material} (${item.quantity}) - Error: Winner ${winner.name} could not afford final bid $${item.currentBid}! (Money: $${winner.money}) - Item not awarded.</li>`;
+                                logAuctionEvent(`Error: ${winner.name} could not afford final bid $${item.currentBid} for ${item.material}.`);
+                            }
+                        } else {
+                             resultsHTML += `<li>${item.material} (${item.quantity}) - Error: Winner ID ${item.highestBidderId} not found!</li>`; // Should not happen
+                        }
+                    } else {
+                        resultsHTML += `<li>${item.material} (${item.quantity}) - Not sold (No bids)</li>`;
+                         logAuctionEvent(`${item.material} received no bids.`);
+                    }
+                });
+                resultsHTML += '</ul>';
+
+                if(auctionResultsDiv) auctionResultsDiv.innerHTML = resultsHTML;
+                renderPlayers(true); // Render final player status with inventory
+
+                if(resultsSectionDiv) resultsSectionDiv.style.display = 'block';
+                if(auctionLogList?.parentElement) auctionLogList.parentElement.style.maxHeight = '400px'; // Allow log to show more entries
+            }
+
+            // Attach event listeners
+            if (placeBidButton) {
+                 placeBidButton.addEventListener('click', handleHumanBid);
+            } else {
+                console.error("Place bid button not found");
+            }
+
+
+            // Initialize and start the game
+            initializeGame();
+        });
+    </script>
 </body>
 </html>
