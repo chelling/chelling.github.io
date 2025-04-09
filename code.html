@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economic Simulation Game - Phase 2</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Economic Simulation Game - Phase 2: Materials Auction</h1>
+
+    <div id="game-container">
+        <div id="players-section">
+            <h2>Players</h2>
+            <div id="players-list"></div>
+        </div>
+
+        <div id="auction-section">
+            <h2>Materials Auction (Live)</h2>
+            <div id="auction-timer">Time Remaining: <span id="time">60</span>s</div>
+            <div id="materials-list"></div>
+            <div id="bid-controls" style="display: none;">
+                <h3>Place Bid on <span id="selected-material-name"></span></h3>
+                <label for="bid-amount">Your Bid ($): </label>
+                <input type="number" id="bid-amount" min="1">
+                <button id="place-bid-button">Place Bid</button>
+                <p id="bid-error" class="error"></p>
+            </div>
+             <div id="auction-log">
+                <h3>Auction Log</h3>
+                <ul id="log-list"></ul>
+            </div>
+        </div>
+
+        <div id="results-section" style="display: none;">
+            <h2>Auction Results</h2>
+            <div id="auction-results"></div>
+             <h2>Final Player Status</h2>
+            <div id="final-players-list"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

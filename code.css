@@ -1,0 +1,210 @@
+body {
+    font-family: sans-serif;
+    line-height: 1.6;
+    margin: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+h1, h2, h3 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+#game-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+#players-section, #auction-section, #results-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    flex-basis: 45%;
+    min-width: 300px;
+}
+
+#results-section {
+     flex-basis: 92%; /* Take full width when visible */
+}
+
+
+#players-list, #final-players-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.player-card {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #e9ecef;
+    font-size: 0.9em;
+}
+
+.player-card.human {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+.player-card strong {
+    color: #007bff;
+}
+
+#auction-timer {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #dc3545;
+    text-align: center;
+    margin-bottom: 20px;
+    background-color: #f8d7da;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#materials-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.material-item {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.material-item h4 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #343a40;
+    text-transform: capitalize;
+}
+.material-item p {
+    margin: 3px 0;
+    font-size: 0.95em;
+}
+
+.material-item button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.material-item button:hover {
+    background-color: #218838;
+}
+
+#bid-controls {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #c3e6cb;
+    background-color: #d4edda;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#bid-controls h3 {
+     margin-top: 0;
+}
+
+#bid-controls input[type="number"] {
+    padding: 8px;
+    margin: 0 10px;
+    width: 80px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+#bid-controls button {
+    padding: 8px 15px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+}
+
+#bid-controls button:hover {
+    background-color: #0056b3;
+}
+
+.error {
+    color: #dc3545;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+#auction-log {
+    margin-top: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 10px;
+    background-color: #f9f9f9;
+    font-size: 0.85em;
+}
+#auction-log h3 {
+    margin-top: 0;
+    font-size: 1.1em;
+    text-align: left;
+}
+#log-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+#log-list li {
+    margin-bottom: 5px;
+    border-bottom: 1px dotted #ddd;
+    padding-bottom: 3px;
+}
+
+#auction-results ul, #final-players-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+#auction-results li, #final-players-list li {
+    background-color: #e2e3e5;
+    margin-bottom: 8px;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.highlight {
+    animation: highlight-bid 1s ease-out;
+}
+
+@keyframes highlight-bid {
+    0% { background-color: #ffc107; }
+    100% { background-color: #f8f9fa; } /* End color of material-item */
+}
+
+.highlight-log {
+    animation: highlight-log-entry 1s ease-out;
+     background-color: #fff3cd; /* Bootstrap's warning background */
+     border-left: 3px solid #ffeeba; /* Bootstrap's warning border */
+}
+
+/* Adjust layout for smaller screens */
+@media (max-width: 768px) {
+    #game-container {
+        flex-direction: column;
+        align-items: center;
+    }
+     #players-section, #auction-section, #results-section {
+        flex-basis: 90%;
+        width: 90%;
+    }
+}
